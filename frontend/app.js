@@ -4,7 +4,7 @@
 // For local testing:
 // const API_URL = "http://127.0.0.1:5000/run_simulation";
 // After deploying (see Phase 3):
-const API_URL = "https://your-app-name.onrender.com/run_simulation"; // <-- You will change this
+const API_URL = "https://monte-carlo-sim-for-vc.onrender.com"; // <-- You will change this
 
 // Get references to all the UI elements
 const runButton = document.getElementById('run-button');
