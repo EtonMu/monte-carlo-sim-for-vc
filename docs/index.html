@@ -3,44 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VC Return Model</title>
+    <title>Asymmetric Return Model</title>
+    <link rel="stylesheet" href="style.css">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <link rel="stylesheet" href="style.css"> </head>
+</head>
 <body>
-    <h1>Asymmetric Return Model (Trimodal Power-Law)</h1>
 
-    <form id="simulation-form">
-        <fieldset>
-            <legend>Trimodal VC Risk</legend>
-            <label for="failure-rate">Failure Rate (%):</label>
-            <input type="number" id="failure-rate" value="50.0" step="0.1">
+    <div class="container">
+        <h1>Asymmetric Return Model (Trimodal Power-Law)</h1>
 
-            <label for="zombie-rate">Zombie Rate (%):</label>
-            <input type="number" id="zombie-rate" value="25.0" step="0.1">
+        <form id="simulation-form">
 
-            <label for="investment">Initial Investment ($):</label>
-            <input type="number" id="investment" value="250000">
+            <fieldset>
+                <legend>Trimodal VC Risk (The 3 Paths)</legend>
+                <div class="input-row">
+                    <label for="failure-rate">1. Failure Rate (Total Loss) (%)</label>
+                    <input type="number" id="failure-rate" value="50.0" step="0.1">
+                </div>
+                <div class="input-row">
+                    <label for="zombie-rate">2. Zombie Rate (Low Recovery) (%)</label>
+                    <input type="number" id="zombie-rate" value="25.0" step="0.1">
+                </div>
+                <small>The 'Success Rate' will be the remainder (e.g., 25.0%)</small>
 
-            <label for="num-sims">Number of Simulations:</label>
-            <input type="number" id="num-sims" value="100000">
-        </fieldset>
+                <hr>
+                <label>Recovery on Zombie (MOIC)</label>
+                <div class="input-group-tri">
+                    <div>
+                        <label for="rec-min">Min</label>
+                        <input type="number" id="rec-min" value="0.1" step="0.1">
+                    </div>
+                    <div>
+                        <label for="rec-mode">Mode</label>
+                        <input type="number" id="rec-mode" value="0.3" step="0.1">
+                    </div>
+                    <div>
+                        <label for="rec-max">Max</label>
+                        <input type="number" id="rec-max" value="0.9" step="0.1">
+                    </div>
+                </div>
+            </fieldset>
 
-        <button type="button" id="run-button">Run Simulation</button>
-    </form>
+            <fieldset>
+                <legend>'Success Path' Deal Inputs</legend>
+                <div class="input-row">
+                    <label for="investment">Initial Investment ($)</label>
+                    <input type="number" id="investment" value="250000" step="1000">
+                </div>
+                <label>Post-Money Valuation / Cap ($)</label>
+                <div class="input-group-tri">
+                    <div>
+                        <label for="val-min">Min</label>
+                        <input type="number" id="val-min" value="10000000">
+                    </div>
+                    <div>
+                        <label for="val-mode">Mode</label>
+                        <input type="number" id="val-mode" value="15000000">
+                    </div>
+                    <div>
+                        <label for="val-max">Max</label>
+                        <input type="number" id="val-max" value="20000000">
+                    </div>
+                </div>
+            </fieldset>
 
-    <hr>
-    <h2>Results</h2>
+            <fieldset>
+                <legend>'Success Path' Market & Exit</legend>
+                <label>Total Addressable Market ($)</label>
+                <div class="input-group-di">
+                    <div>
+                        <label for="tam-min">Min (10th Pctl)</label>
+                        <input type="number" id="tam-min" value="1000000000">
+                    </div>
+                    <div>
+                        <label for="tam-max">Max (90th Pctl)</label>
+                        <input type="number" id="tam-max" value="5000000000">
+                    </div>
+                </div>
 
-    <div id="loading-message" style="display: none;">Running simulation...</div>
-    <div id="error-message" style="display: none; color: red;"></div>
+                <label>Market Share at Exit (%)</label>
+                <div class="input-group-di">
+                    <div>
+                        <label for="ms-min">Min (10th Pctl)</label>
+                        <input type="number" id="ms-min" value="1.0" step="0.1">
+                    </div>
+                    <div>
+                        <label for="ms-max">Max (90th Pctl)</label>
+                        <input type="number" id="ms-max" value="5.0" step="0.1">
+                    </div>
+                </div>
 
-    <div class="results-container">
-        <pre id="metrics-output"></pre>
+                <label>Exit Multiple (EV/Revenue)</label>
+                <div class="input-group-tri">
+                    <div>
+                        <label for="mult-q1">Q1 (25th)</label>
+                        <input type="number" id="mult-q1" value="3.0" step="0.1">
+                    </div>
+                    <div>
+                        <label for="mult-median">Q2 (50th)</label>
+                        <input type="number" id="mult-median" value="5.0" step="0.1">
+                    </div>
+                    <div>
+                        <label for="mult-q3">Q3 (75th)</label>
+                        <input type="number" id="mult-q3" value="8.0" step="0.1">
+                    </div>
+                </div>
+            </fieldset>
 
-        <div id="irr-plot"></div>
-        <div id="moic-plot"></div>
+            <fieldset>
+                <legend>'Success Path' Timing & Dilution</legend>
+                <label>Time to Exit (Years)</label>
+                <div class="input-group-tri">
+                    <div>
+                        <label for="time-min">Min</label>
+                        <input type="number" id="time-min" value="4.0" step="0.1">
+                    </div>
+                    <div>
+                        <label for="time-mode">Mode</label>
+                        <input type="number" id="time-mode" value="6.0" step="0.1">
+                    </div>
+                    <div>
+                        <label for="time-max">Max</label>
+                        <input type="number" id="time-max" value="9.0" step="0.1">
+                    </div>
+                </div>
+
+                <label>Num. Future Rounds</label>
+                <div class="input-group-di">
+                    <div>
+                        <label for="rounds-min">Min</label>
+                        <input type="number" id="rounds-min" value="2" step="1">
+                    </div>
+                    <div>
+                        <label for="rounds-max">Max</label>
+                        <input type="number" id="rounds-max" value="4" step="1">
+                    </div>
+                </div>
+
+                <label>Dilution per Round (%)</label>
+                <div class="input-group-tri">
+                    <div>
+                        <label for="dil-min">Min</label>
+                        <input type="number" id="dil-min" value="15.0" step="0.1">
+                    </div>
+                    <div>
+                        <label for="dil-mode">Mode</label>
+                        <input type="number" id="dil-mode" value="20.0" step="0.1">
+                    </div>
+                    <div>
+                        <label for="dil-max">Max</label>
+                        <input type="number" id="dil-max" value="25.0" step="0.1">
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Simulation Settings</legend>
+                <div class="input-row">
+                    <label for="num-sims">Number of Simulations</label>
+                    <input type="number" id="num-sims" value="100000" step="10000">
+                </div>
+            </fieldset>
+
+            <button type="button" id="run-button">Run Simulation</button>
+        </form>
+
+        <hr>
+        <h2>Results</h2>
+
+        <div id="loading-message" class="message" style="display: none;">
+            Running simulation... This may take a few seconds.
+        </div>
+        <div id="error-message" class="message error" style="display: none;"></div>
+
+        <div class="results-container">
+            <div class="metrics-area">
+                <pre id="metrics-output"></pre>
+            </div>
+            <div class="plots-area">
+                <div id="irr-plot"></div>
+                <div id="moic-plot"></div>
+            </div>
+        </div>
     </div>
 
     <script src="app.js"></script>
 </body>
-</html> 
+</html>
