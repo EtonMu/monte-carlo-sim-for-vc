@@ -91,7 +91,7 @@ runButton.addEventListener('click', async () => {
                 metricsText += `${key.padEnd(32)}: ${(value * 100).toFixed(2)}%\n`;
             } else if (key.includes("MOIC")) {
                 metricsText += `${key.padEnd(32)}: ${value.toFixed(2)}x\n`;
-            } else if (key.includes("Val") || key.includes("Proceeds")) {
+            } else if (key.includes("Valuation") || key.includes("Proceeds")) {
                 metricsText += `${key.padEnd(32)}: $${Math.round(value).toLocaleString()}\n`;
             } else {
                 metricsText += `${key.padEnd(32)}: ${value.toFixed(2)}\n`;

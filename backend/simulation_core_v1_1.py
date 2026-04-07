@@ -130,10 +130,19 @@ def run_simulation(deal_inputs, stochastic_params, num_simulations=100_000):
         -1.0  # IRR is -100% for all 0.0 MOIC runs
     )
 
-    # --- 7. Store Results ---
+    # --- 7. Record Path Labels ---
+    # 0 = Failure, 1 = Zombie, 2 = Success
+    path_label = np.where(
+        path_switch < failure_rate,
+        0,
+        np.where(path_switch < success_rate_threshold, 1, 2)
+    )
+
+    # --- 8. Store Results ---
     results_df = pd.DataFrame({
         'IRR': irr,
         'MOIC': moic,
+        'Path': path_label,
         'HoldingPeriod': holding_periods,
         'ExitValuation': exit_valuation,
         'ExitMultiple': exit_multiples,
@@ -175,14 +184,32 @@ def calculate_metrics(results_df, deal_inputs):
     p_moic_gte_10 = (results_df['MOIC'] >= 10).mean()
 
     # --- Valuation & Proceeds Metrics ---
-    # Note: 'ExitValuation' column is the *success path* valuation
-    mean_exit_valuation = results_df['ExitValuation'].mean()
-    p25_exit_valuation = results_df['ExitValuation'].quantile(0.25)
-    median_exit_valuation = results_df['ExitValuation'].median()
-    p75_exit_valuation = results_df['ExitValuation'].quantile(0.75)
+    # ExitValuation is only meaningful for the Success path (Path == 2)
+    success_mask = results_df['Path'] == 2
+    success_df = results_df[success_mask]
 
+    if not success_df.empty:
+        mean_exit_valuation = success_df['ExitValuation'].mean()
+        p25_exit_valuation = success_df['ExitValuation'].quantile(0.25)
+        median_exit_valuation = success_df['ExitValuation'].median()
+        p75_exit_valuation = success_df['ExitValuation'].quantile(0.75)
+    else:
+        mean_exit_valuation = 0.0
+        p25_exit_valuation = 0.0
+        median_exit_valuation = 0.0
+        p75_exit_valuation = 0.0
+
+    # Blended (all-path) investor proceeds — the true portfolio expected value
     mean_investor_proceeds = results_df['MOIC'].mean() * deal_inputs['initial_investment']
     median_investor_proceeds = results_df['MOIC'].median() * deal_inputs['initial_investment']
+
+    # Success-conditional investor proceeds — what you get IF the deal succeeds
+    if not success_df.empty:
+        mean_success_proceeds = success_df['MOIC'].mean() * deal_inputs['initial_investment']
+        median_success_proceeds = success_df['MOIC'].median() * deal_inputs['initial_investment']
+    else:
+        mean_success_proceeds = 0.0
+        median_success_proceeds = 0.0
 
     # --- Holding Period Metrics ---
     mean_holding_period = results_df['HoldingPeriod'].mean()
@@ -257,13 +284,19 @@ def calculate_metrics(results_df, deal_inputs):
         "P(MOIC >= 3x)": p_moic_gte_3,
         "P(MOIC >= 10x)": p_moic_gte_10,
 
-        "--- Valuation & Proceeds ---": "",
-        "Mean 'Success Path' ExitVal": mean_exit_valuation,
-        "25th Pctl 'Success Path' ExitVal": p25_exit_valuation,
-        "Median 'Success Path' ExitVal": median_exit_valuation,
-        "75th Pctl 'Success Path' ExitVal": p75_exit_valuation,
-        "Mean Final Investor Proceeds": mean_investor_proceeds,
-        "Median Final Investor Proceeds": median_investor_proceeds,
+        "--- Success Path Exit Valuation ---": "",
+        "Mean Exit Valuation (Success Only)": mean_exit_valuation,
+        "P25 Exit Valuation (Success Only)": p25_exit_valuation,
+        "Median Exit Valuation (Success Only)": median_exit_valuation,
+        "P75 Exit Valuation (Success Only)": p75_exit_valuation,
+
+        "--- Blended Investor Proceeds (All Paths) ---": "",
+        "Mean Investor Proceeds": mean_investor_proceeds,
+        "Median Investor Proceeds": median_investor_proceeds,
+
+        "--- Success-Conditional Proceeds ---": "",
+        "Mean Proceeds (Success Only)": mean_success_proceeds,
+        "Median Proceeds (Success Only)": median_success_proceeds,
 
         "--- Holding Period ---": "",
         "Mean Holding Period": mean_holding_period,
