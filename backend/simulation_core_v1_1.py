@@ -148,7 +148,9 @@ def run_simulation(deal_inputs, stochastic_params, num_simulations=100_000):
         'ExitMultiple': exit_multiples,
         'MarketShare': market_shares,
         'TAM': tam_samples,
-        'PostMoneyValuation': post_money_valuations
+        'PostMoneyValuation': post_money_valuations,
+        'FinalOwnership': final_ownership_pct,
+        'CumulativeDilution': cumulative_dilution_factor
     })
 
     return results_df
@@ -297,6 +299,15 @@ def calculate_metrics(results_df, deal_inputs):
         "--- Success-Conditional Proceeds ---": "",
         "Mean Proceeds (Success Only)": mean_success_proceeds,
         "Median Proceeds (Success Only)": median_success_proceeds,
+
+        "--- Diagnostic (Success Path Intermediates) ---": "",
+        "Median Final Ownership (Success)": success_df['FinalOwnership'].median() if not success_df.empty else 0,
+        "Median Cumulative Dilution (Success)": success_df['CumulativeDilution'].median() if not success_df.empty else 0,
+        "Median Post-Money Val (Success)": success_df['PostMoneyValuation'].median() if not success_df.empty else 0,
+        "Median TAM (Success)": success_df['TAM'].median() if not success_df.empty else 0,
+        "Median Market Share (Success)": success_df['MarketShare'].median() if not success_df.empty else 0,
+        "Median Exit Multiple (Success)": success_df['ExitMultiple'].median() if not success_df.empty else 0,
+        "Success Path Count": float(len(success_df)),
 
         "--- Holding Period ---": "",
         "Mean Holding Period": mean_holding_period,

@@ -10,6 +10,7 @@ import traceback
 from simulation_core_v1_1 import run_simulation, calculate_metrics
 
 app = Flask(__name__)
+app.json.sort_keys = False  # Preserve metrics dict insertion order
 CORS(app)
 
 
