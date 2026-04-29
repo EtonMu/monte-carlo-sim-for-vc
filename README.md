@@ -257,8 +257,3 @@ The defaults and structural choices in this model draw from:
 
 When you update defaults, document the source and the access date in a comment near the change.
 
----
-
-## License
-
-(Add your preferred license here. MIT is a sensible default for an analytical tool you want others to fork.)
