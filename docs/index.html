@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asymmetric Return Model</title>
+    <title>Monte Carlo Simulator for Venture Capital</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
 
     <div class="container">
-        <h1>Asymmetric Return Model (Trimodal Power-Law)</h1>
+        <h1>Monte Carlo Simulator for Venture Capital</h1>
 
         <form id="simulation-form">
 
@@ -48,21 +48,21 @@
                 <legend>'Success Path' Deal Inputs</legend>
                 <div class="input-row">
                     <label for="investment">Initial Investment ($)</label>
-                    <input type="number" id="investment" value="250000" step="1000">
+                    <input type="text" id="investment" inputmode="numeric" data-format="number" value="250,000">
                 </div>
                 <label>Post-Money Valuation / Cap ($)</label>
                 <div class="input-group-tri">
                     <div>
                         <label for="val-min">Min</label>
-                        <input type="number" id="val-min" value="10000000">
+                        <input type="text" id="val-min" inputmode="numeric" data-format="number" value="10,000,000">
                     </div>
                     <div>
                         <label for="val-mode">Mode</label>
-                        <input type="number" id="val-mode" value="15000000">
+                        <input type="text" id="val-mode" inputmode="numeric" data-format="number" value="15,000,000">
                     </div>
                     <div>
                         <label for="val-max">Max</label>
-                        <input type="number" id="val-max" value="20000000">
+                        <input type="text" id="val-max" inputmode="numeric" data-format="number" value="20,000,000">
                     </div>
                 </div>
             </fieldset>
@@ -73,11 +73,11 @@
                 <div class="input-group-di">
                     <div>
                         <label for="tam-min">Min (10th Pctl)</label>
-                        <input type="number" id="tam-min" value="1000000000">
+                        <input type="text" id="tam-min" inputmode="numeric" data-format="number" value="1,000,000,000">
                     </div>
                     <div>
                         <label for="tam-max">Max (90th Pctl)</label>
-                        <input type="number" id="tam-max" value="5000000000">
+                        <input type="text" id="tam-max" inputmode="numeric" data-format="number" value="5,000,000,000">
                     </div>
                 </div>
 
@@ -161,11 +161,28 @@
                 <legend>Simulation Settings</legend>
                 <div class="input-row">
                     <label for="num-sims">Number of Simulations</label>
-                    <input type="number" id="num-sims" value="100000" step="10000">
+                    <input type="text" id="num-sims" inputmode="numeric" data-format="number" value="100,000">
                 </div>
             </fieldset>
 
-            <button type="button" id="run-button">Run Simulation</button>
+            <div class="action-bar">
+                <button type="button" id="run-button" class="primary-btn">Run Simulation</button>
+                <div class="scenario-controls">
+                    <button type="button" id="save-as-a" class="secondary-btn">Run &amp; Save as Scenario A</button>
+                    <button type="button" id="save-as-b" class="secondary-btn">Run &amp; Save as Scenario B</button>
+                    <button type="button" id="compare-ab" class="secondary-btn">Compare A vs B</button>
+                </div>
+                <div class="scenario-controls">
+                    <button type="button" id="save-json" class="secondary-btn">Save Inputs (JSON)</button>
+                    <label for="load-json" class="secondary-btn file-label">Load Inputs (JSON)</label>
+                    <input type="file" id="load-json" accept="application/json" style="display:none;">
+                    <button type="button" id="run-tornado" class="secondary-btn">Run Sensitivity Tornado</button>
+                </div>
+                <div class="scenario-status" id="scenario-status">
+                    Scenario A: <span id="status-a">empty</span> &nbsp;|&nbsp;
+                    Scenario B: <span id="status-b">empty</span>
+                </div>
+            </div>
         </form>
 
         <hr>
@@ -185,7 +202,36 @@
                 <button id="download-irr" class="download-btn" style="display:none;">Download IRR Chart</button>
                 <div id="moic-plot"></div>
                 <button id="download-moic" class="download-btn" style="display:none;">Download MOIC Chart</button>
+                <div id="ccdf-plot"></div>
+                <button id="download-ccdf" class="download-btn" style="display:none;">Download CCDF Chart</button>
             </div>
+        </div>
+
+        <div id="tornado-section" style="display:none;">
+            <hr>
+            <h2>Sensitivity Tornado (Asymmetry Score)</h2>
+            <small>
+                Each input group is shifted by &plusmn;20% (or &plusmn;10pp for Failure/Zombie rates) and the
+                simulation is re-run with reduced sample size. Bars show how much the asymmetry score moves.
+            </small>
+            <div id="tornado-plot"></div>
+        </div>
+
+        <div id="compare-section" style="display:none;">
+            <hr>
+            <h2>Scenario A vs B Comparison</h2>
+            <div class="compare-grid">
+                <div class="compare-col">
+                    <h3>Scenario A</h3>
+                    <pre id="metrics-output-a"></pre>
+                </div>
+                <div class="compare-col">
+                    <h3>Scenario B</h3>
+                    <pre id="metrics-output-b"></pre>
+                </div>
+            </div>
+            <div id="compare-irr-plot"></div>
+            <div id="compare-moic-plot"></div>
         </div>
     </div>
 
